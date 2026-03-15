@@ -1,4 +1,7 @@
 package com.airbnb.airbnbclone.model.domain.enums;
 
-public class BookingStatus {
+public enum BookingStatus {
+    PENDING,
+    CONFIRMED,
+    CANCELLED
 }
