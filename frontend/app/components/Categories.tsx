@@ -22,13 +22,14 @@ export default function Categories({ selectedCategory, setSelectedCategory }: Ca
     // Дефинирање на листите со икони
     const categories = [
         { label: "All", icon: Map },
-        { label: "Beachfront", icon: Palmtree },
-        { label: "Cabins", icon: Home },
-        { label: "Islands", icon: Waves },
-        { label: "Modern", icon: Coffee },
-        { label: "Pools", icon: Snowflake },
-        { label: "Camping", icon: Tent },
-        { label: "Castles", icon: Castle },
+        { label: "APARTMENT", icon: Coffee },
+        { label: "HOUSE", icon: Home },
+        { label: "VILLA", icon: Palmtree },
+        { label: "CABIN", icon: Tent },
+        { label: "COTTAGE", icon: Waves },
+        { label: "STUDIO", icon: Snowflake },
+        { label: "LOFT", icon: Castle },
+        { label: "GUESTHOUSE", icon: Home },
     ];
 
     return (

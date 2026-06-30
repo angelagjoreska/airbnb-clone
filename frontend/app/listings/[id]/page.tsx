@@ -1,22 +1,75 @@
 "use client";
 import Navbar from "../../components/Navbar";
 import { useParams, useRouter } from "next/navigation";
-import { listings } from "../../data";
-import { useState } from "react";
+import {
+    Booking,
+    createReview,
+    deleteReview,
+    fetchBookingsByListing,
+    fetchListingById,
+    fetchReviewsByListing,
+    Listing,
+    Review
+} from "../../data";
+import { FormEvent, useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { reservations } from "../../data";
+import { useToast } from "../../components/ToastProvider";
 
 export default function ListingDetail() {
     const params = useParams();
     const router = useRouter();
+    const toast = useToast();
+    const listingId = Number(params.id);
+    const [listing, setListing] = useState<Listing | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [showAmenities, setShowAmenities] = useState(false);
     const [dates, setDates] = useState<[Date | null, Date | null]>([null, null]);
+    const [guestCount, setGuestCount] = useState(1);
     const [startDate, endDate] = dates;
 
-    // Го наоѓаме точниот апартман според ID од линкот
-    const listing = listings.find((item) => item.id === Number(params.id));
-    if (!listing) return null;
+    useEffect(() => {
+        let isMounted = true;
+
+        fetchListingById(listingId)
+            .then((data) => {
+                if (isMounted) setListing(data);
+            })
+            .catch(() => {
+                if (isMounted) setError("Listing not found.");
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false);
+            });
+
+        fetchBookingsByListing(listingId)
+            .then((listingBookings) => {
+                if (isMounted) setBookings(listingBookings);
+            })
+            .catch((bookingError) => {
+                console.error("Failed to fetch listing bookings:", bookingError);
+                toast.error("Could not load booked dates for this listing.");
+            });
+
+        fetchReviewsByListing(listingId)
+            .then((listingReviews) => {
+                if (isMounted) setReviews(listingReviews);
+            })
+            .catch((reviewError) => {
+                console.error("Failed to fetch listing reviews:", reviewError);
+                toast.error("Could not load reviews for this listing.");
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [listingId, toast]);
 
     // Логика за пресметка на ноќевања
     const nights =
@@ -30,44 +83,104 @@ export default function ListingDetail() {
     const totalPrice = listing ? (listing.price * nights) + serviceFee : 0;
 
     const handleReserve = () => {
+        if (!listing) return;
+
         if (!startDate || !endDate) {
-            alert("Please select dates first");
+            toast.info("Please select dates first.");
             return;
         }
 
-        const isTaken = reservations.some((r) => {
-            if (r.listingId !== listing.id) return false;
+        if (guestCount < 1 || guestCount > listing.maxGuests) {
+            toast.info(`Choose between 1 and ${listing.maxGuests} guests.`);
+            return;
+        }
 
-            const existingStart = new Date(r.startDate);
-            const existingEnd = new Date(r.endDate);
+        const isTaken = bookings.some((booking) => {
+            if (booking.status === "CANCELLED") return false;
 
-            return startDate <= existingEnd && endDate >= existingStart;
+            const existingStart = new Date(`${booking.checkInDate}T00:00:00`);
+            const existingEnd = new Date(`${booking.checkOutDate}T00:00:00`);
+
+            return startDate < existingEnd && endDate > existingStart;
         });
 
         if (isTaken) {
-            alert("These dates are already booked!");
+            toast.error("These dates are already booked.");
             return;
         }
 
-        reservations.push({
-            listingId: listing.id,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString()
-        });
-
-        alert("Reservation successful!");
-
         router.push(
-            `/checkout/${listing.id}?start=${startDate.toISOString()}&end=${endDate.toISOString()}`
+            `/checkout/${listing.id}?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}&guests=${guestCount}`
         );
     };
 
+    const handleSubmitReview = async (event: FormEvent) => {
+        event.preventDefault();
 
-    if (!listing) {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            toast.info("Log in to review this listing.");
+            router.push(`/login?redirect=/listings/${listingId}`);
+            return;
+        }
+
+        setIsSubmittingReview(true);
+
+        try {
+            const created = await createReview(
+                {
+                    listingId,
+                    rating: reviewRating,
+                    comment: reviewComment
+                },
+                token
+            );
+
+            setReviews((current) => [created, ...current]);
+            setReviewRating(5);
+            setReviewComment("");
+            toast.success("Review posted.");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Could not post review.");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId: number) => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            toast.info("Log in to delete your review.");
+            router.push(`/login?redirect=/listings/${listingId}`);
+            return;
+        }
+
+        try {
+            await deleteReview(reviewId, token);
+            setReviews((current) => current.filter((review) => review.id !== reviewId));
+            toast.success("Review deleted.");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Could not delete review.");
+        }
+    };
+
+
+    if (isLoading) {
         return (
             <div style={{ backgroundColor: "#000", minHeight: "100vh", color: "white", padding: "40px" }}>
                 <Navbar onSearch={() => {}} />
-                <h1>Listing not found.</h1>
+                <h1>Loading listing...</h1>
+            </div>
+        );
+    }
+
+    if (!listing || error) {
+        return (
+            <div style={{ backgroundColor: "#000", minHeight: "100vh", color: "white", padding: "40px" }}>
+                <Navbar onSearch={() => {}} />
+                <h1>{error || "Listing not found."}</h1>
             </div>
         );
     }
@@ -151,19 +264,119 @@ export default function ListingDetail() {
                                 >
                                     {listing.amenities?.map((item) => (
                                         <div
-                                            key={item.id}
+                                            key={item}
                                             style={{
                                                 padding: "10px",
                                                 borderRadius: "8px",
                                                 backgroundColor: "#1a1a1a"
                                             }}
                                         >
-                                            {item.icon} {item.name}
+                                            {item}
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
+
+                        <section style={{marginTop: "32px", borderTop: "1px solid #333", paddingTop: "32px"}}>
+                            <h2 style={{fontSize: "22px", marginBottom: "16px"}}>
+                                Reviews {reviews.length > 0 ? `(${reviews.length})` : ""}
+                            </h2>
+
+                            <form onSubmit={handleSubmitReview} style={{marginBottom: "24px"}}>
+                                <div style={{display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px"}}>
+                                    <label htmlFor="rating" style={{color: "#ccc", fontSize: "14px"}}>Rating</label>
+                                    <select
+                                        id="rating"
+                                        value={reviewRating}
+                                        onChange={(event) => setReviewRating(Number(event.target.value))}
+                                        style={{
+                                            background: "#111",
+                                            color: "white",
+                                            border: "1px solid #444",
+                                            borderRadius: "8px",
+                                            padding: "8px"
+                                        }}
+                                    >
+                                        {[5, 4, 3, 2, 1].map((rating) => (
+                                            <option key={rating} value={rating}>{rating}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <textarea
+                                    value={reviewComment}
+                                    onChange={(event) => setReviewComment(event.target.value)}
+                                    placeholder="Share what stood out about this stay"
+                                    maxLength={1000}
+                                    style={{
+                                        width: "100%",
+                                        minHeight: "90px",
+                                        boxSizing: "border-box",
+                                        background: "#111",
+                                        color: "white",
+                                        border: "1px solid #444",
+                                        borderRadius: "10px",
+                                        padding: "12px",
+                                        resize: "vertical"
+                                    }}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingReview || reviewComment.trim().length === 0}
+                                    style={{
+                                        marginTop: "12px",
+                                        backgroundColor: isSubmittingReview ? "#555" : "#ff385c",
+                                        color: "white",
+                                        border: "none",
+                                        padding: "10px 16px",
+                                        borderRadius: "10px",
+                                        cursor: isSubmittingReview ? "default" : "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    {isSubmittingReview ? "Posting..." : "Post review"}
+                                </button>
+                            </form>
+
+                            {reviews.length === 0 ? (
+                                <p style={{color: "#a0a0a0"}}>No reviews yet.</p>
+                            ) : (
+                                <div style={{display: "grid", gap: "12px"}}>
+                                    {reviews.map((review) => (
+                                        <article
+                                            key={review.id}
+                                            style={{
+                                                background: "#111",
+                                                border: "1px solid #333",
+                                                borderRadius: "10px",
+                                                padding: "14px"
+                                            }}
+                                        >
+                                            <div style={{display: "flex", justifyContent: "space-between", gap: "12px"}}>
+                                                <strong>{review.guestName || "Guest"}</strong>
+                                                <span style={{color: "#ffcc66"}}>★ {review.rating}</span>
+                                            </div>
+                                            {review.comment && (
+                                                <p style={{color: "#ccc", lineHeight: 1.6, marginBottom: 0}}>{review.comment}</p>
+                                            )}
+                                            <button
+                                                onClick={() => handleDeleteReview(review.id)}
+                                                style={{
+                                                    marginTop: "10px",
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#ff8a8a",
+                                                    cursor: "pointer",
+                                                    padding: 0
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
                     </div>
 
                     {/* Десна страна: Картичка за резервација */}
@@ -201,19 +414,39 @@ export default function ListingDetail() {
                                     minDate={new Date()}
                                     placeholderText="Select dates"
                                     inline
-                                    excludeDateIntervals={reservations
-                                        .filter(r => r.listingId === listing.id)
-                                        .map(r => ({
-                                            start: new Date(r.startDate),
-                                            end: new Date(r.endDate)
+                                    excludeDateIntervals={bookings
+                                        .filter((booking) => booking.status !== "CANCELLED")
+                                        .map((booking) => ({
+                                            start: new Date(`${booking.checkInDate}T00:00:00`),
+                                            end: new Date(`${booking.checkOutDate}T00:00:00`)
                                         }))
                                     }
                                 />
                             </div>
                             <div style={{padding: "12px"}}>
-                                <label style={{fontSize: "10px", fontWeight: "bold", display: "block", color: "white"}}>NUMBER
-                                    OF NIGHTS</label>
-
+                                <label style={{fontSize: "10px", fontWeight: "bold", display: "block", color: "white", marginBottom: "8px"}}>
+                                    GUESTS
+                                </label>
+                                <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                                    <span style={{color: "#a0a0a0", fontSize: "14px"}}>
+                                        Max {listing.maxGuests}
+                                    </span>
+                                    <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
+                                        <button
+                                            onClick={() => setGuestCount((current) => Math.max(1, current - 1))}
+                                            style={guestButton}
+                                        >
+                                            -
+                                        </button>
+                                        <strong>{guestCount}</strong>
+                                        <button
+                                            onClick={() => setGuestCount((current) => Math.min(listing.maxGuests, current + 1))}
+                                            style={guestButton}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -257,3 +490,13 @@ export default function ListingDetail() {
         </main>
     );
 }
+
+const guestButton: React.CSSProperties = {
+    width: "30px",
+    height: "30px",
+    borderRadius: "50%",
+    border: "1px solid #555",
+    background: "#111",
+    color: "white",
+    cursor: "pointer"
+};

@@ -1,51 +1,45 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Navbar from "../components/Navbar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useToast } from "../components/ToastProvider";
+import { login } from "../data";
 
 export default function LoginPage() {
+    return (
+        <Suspense fallback={<main style={{ backgroundColor: "#000", minHeight: "100vh" }} />}>
+            <LoginContent />
+        </Suspense>
+    );
+}
+
+function LoginContent() {
     // 1. Дефинирање на држави (states) за инпутите
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectPath = searchParams.get("redirect") || "/";
+    const toast = useToast();
 
     // 2. Функција која ќе го изврши реалниот POST повик до Spring Boot
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://localhost:8080/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                }),
-            });
+            const data = await login({ email, password });
 
-            if (response.ok) {
-                const data = await response.json();
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("email", data.email);
+            localStorage.setItem("role", data.role);
 
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("email", data.email);
-                localStorage.setItem("role", data.role);
+            toast.success("Login successful.");
+            router.push(redirectPath);
 
-                window.location.href = "/";
-
-                alert("Login successful!");
-
-                router.push("/");
-            } else {
-                const err = await response.json();
-                alert(err.message || "Login failed");
-            }
-
-        } catch (err) {
-            alert("Backend not reachable");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Backend not reachable.");
         }
     };
 
@@ -94,7 +88,7 @@ export default function LoginPage() {
                     </form>
 
                     <p style={{ marginTop: "20px", textAlign: "center", fontSize: "14px", color: "#a0a0a0" }}>
-                        Don't have an account? <Link href="/register" style={{ color: "#ff385c", textDecoration: "none" }}>Sign up</Link>
+                        Don&apos;t have an account? <Link href="/register" style={{ color: "#ff385c", textDecoration: "none" }}>Sign up</Link>
                     </p>
                 </div>
             </div>

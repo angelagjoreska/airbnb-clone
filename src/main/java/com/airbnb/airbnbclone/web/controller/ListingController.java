@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,12 +54,15 @@ public class ListingController {
     @GetMapping("/search")
     public ResponseEntity<List<ListingDTO>> searchListings(
             @RequestParam(required = false) Long cityId,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) ListingCategory category,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Integer guests) {
+            @RequestParam(required = false) Integer guests,
+            @RequestParam(required = false) LocalDate checkIn,
+            @RequestParam(required = false) LocalDate checkOut) {
         return ResponseEntity.ok(
-                listingService.searchListings(cityId, category, minPrice, maxPrice, guests));
+                listingService.searchListings(cityId, location, category, minPrice, maxPrice, guests, checkIn, checkOut));
     }
 
     @PostMapping

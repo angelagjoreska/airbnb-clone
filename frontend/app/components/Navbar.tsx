@@ -58,9 +58,11 @@ export default function Navbar({ onSearch }: NavbarProps) {
     };
 
     const handleSearch = () => {
+        const location = city.trim() || destination.trim();
+
         onSearch(
-            `${city}, ${destination}`, // Skopje, Macedonia
-            adults + children,
+            location,
+            adults + children + infants + pets,
             startDate,
             endDate
         );

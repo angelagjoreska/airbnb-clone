@@ -2,11 +2,34 @@
 
 import { useWishlist } from "../context/WishlistContext";
 import Link from "next/link";
-import { listings } from "../data";
+import { fetchListings, Listing } from "../data";
 import { Heart } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function WishlistPage() {
     const { wishlist, toggleWishlist } = useWishlist();
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        fetchListings()
+            .then((data) => {
+                if (isMounted) setListings(data);
+            })
+            .catch(() => {
+                if (isMounted) setError("Could not load wishlist listings.");
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const savedListings = listings.filter((l) =>
         wishlist.includes(l.id)
@@ -18,7 +41,11 @@ export default function WishlistPage() {
                 Your Wishlist
             </h1>
 
-            {savedListings.length === 0 ? (
+            {isLoading ? (
+                <p style={{ color: "#aaa" }}>Loading wishlist...</p>
+            ) : error ? (
+                <p style={{ color: "#ff385c" }}>{error}</p>
+            ) : savedListings.length === 0 ? (
                 <p style={{ color: "#aaa" }}>No saved places yet 💔</p>
             ) : (
                 <div style={{
@@ -47,6 +74,7 @@ export default function WishlistPage() {
                             <Link href={`/listings/${listing.id}`}>
                                 <img
                                     src={listing.image}
+                                    alt={listing.title}
                                     style={{
                                         width: "100%",
                                         height: "250px",

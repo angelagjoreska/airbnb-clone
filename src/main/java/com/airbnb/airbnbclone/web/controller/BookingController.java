@@ -24,8 +24,12 @@ public class BookingController {
     private final UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookingDTO> getBookingById(@PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.getBookingById(id));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BookingDTO> getBookingById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Long userId = getIdFromUserDetails(userDetails);
+        return ResponseEntity.ok(bookingService.getBookingById(id, userId));
     }
 
     @GetMapping("/my")
@@ -44,7 +48,7 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingsByHost(hostId));
     }
 
-    @GetMapping("/listing/{listingId}")
+    @GetMapping({"/listing/{listingId}", "/listings/{listingId}"})
     public ResponseEntity<List<BookingDTO>> getBookingsByListing(@PathVariable Long listingId) {
         return ResponseEntity.ok(bookingService.getBookingsByListing(listingId));
     }

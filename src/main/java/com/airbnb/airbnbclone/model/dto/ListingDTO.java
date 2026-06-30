@@ -41,6 +41,8 @@ public class ListingDTO {
 
     private String cityName;
 
+    private String cityCountry;
+
     private Long hostId;
 
     private String hostName;

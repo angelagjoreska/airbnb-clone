@@ -1,8 +1,6 @@
 import "./globals.css";
-import {Inter} from "next/font/google";
+import {ToastProvider} from "./components/ToastProvider";
 import {WishlistProvider} from "./context/WishlistContext";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
                                      children,
@@ -11,11 +9,13 @@ export default function RootLayout({
 }) {
   return (
       <html lang="en">
-      <body className={inter.className} style={{ margin: 0, backgroundColor: "#000", color: "white" }}>
+      <body style={{ margin: 0, backgroundColor: "#000", color: "white", fontFamily: "Inter, Arial, sans-serif" }}>
       {/* WishlistProvider овозможува сите компоненти внатре да знаат кои се омилени места */}
-      <WishlistProvider>
-        {children}
-      </WishlistProvider>
+      <ToastProvider>
+        <WishlistProvider>
+          {children}
+        </WishlistProvider>
+      </ToastProvider>
       </body>
       </html>
   );

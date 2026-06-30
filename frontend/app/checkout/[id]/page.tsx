@@ -1,21 +1,43 @@
 "use client";
 
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { listings } from "../../data";
-import { useState } from "react";
+import { createBooking, fetchListingById, Listing } from "../../data";
+import { Suspense, useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div style={page}>Loading checkout...</div>}>
+            <CheckoutContent />
+        </Suspense>
+    );
+}
+
+function CheckoutContent() {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
+    const toast = useToast();
+    const listingId = Number(params.id);
 
-    const listing = listings.find(l => l.id === Number(params.id));
+    const [listing, setListing] = useState<Listing | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [bookingError, setBookingError] = useState("");
 
     const startParam = searchParams.get("start");
     const endParam = searchParams.get("end");
+    const guestsParam = searchParams.get("guests");
+    const guests = Math.max(1, Number(guestsParam) || 1);
 
     const start = startParam ? new Date(startParam) : null;
     const end = endParam ? new Date(endParam) : null;
+    const hasValidDates =
+        start instanceof Date &&
+        end instanceof Date &&
+        !Number.isNaN(start.getTime()) &&
+        !Number.isNaN(end.getTime()) &&
+        end > start;
 
     const nights =
         start && end
@@ -32,60 +54,85 @@ export default function CheckoutPage() {
     const [card, setCard] = useState("");
     const [isPaying, setIsPaying] = useState(false);
 
-    if (!listing) return <div style={{ color: "white" }}>Not found</div>;
+    useEffect(() => {
+        let isMounted = true;
+
+        fetchListingById(listingId)
+            .then((data) => {
+                if (isMounted) setListing(data);
+            })
+            .catch(() => {
+                if (isMounted) setError("Listing not found.");
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [listingId]);
+
+    if (isLoading) return <div style={page}>Loading checkout...</div>;
+    if (!listing || error) return <div style={page}>{error || "Not found"}</div>;
 
     const handleConfirm = async () => {
-        if (card.length < 8) return;
+        if (!hasValidDates) {
+            setBookingError("Choose valid check-in and check-out dates.");
+            return;
+        }
+
+        if (guests < 1 || guests > listing.maxGuests) {
+            setBookingError(`Choose between 1 and ${listing.maxGuests} guests.`);
+            return;
+        }
+
+        if (card.replace(/\s/g, "").length < 8) {
+            setBookingError("Enter a card number before confirming.");
+            return;
+        }
 
         setIsPaying(true);
+        setBookingError("");
 
-        // Безбедно вадење на локалниот датум (спречува UTC да го врати денот наназад)
-        const formatLocalDate = (date: Date | null) => {
-            if (!date) return null;
+        const formatLocalDate = (date: Date) => {
             const offset = date.getTimezoneOffset();
-            const localDate = new Date(date.getTime() - (offset * 60 * 1000));
-            return localDate.toISOString().split('T')[0];
+            const localDate = new Date(date.getTime() - offset * 60 * 1000);
+            return localDate.toISOString().split("T")[0];
         };
 
-        const formattedCheckIn = formatLocalDate(start);
-        const formattedCheckOut = formatLocalDate(end);
-
-        // ГИ ЗЕМАМЕ ПОДАТОЦИТЕ ОД ТВОЈОТ LOCALSTORAGE
         const jwtToken = localStorage.getItem("token");
 
-        setTimeout(async () => {
-            try {
-                const response = await fetch("http://localhost:8080/api/bookings", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // ГО ПРАЌАМЕ JWT ТОКЕНОТ КАКО ШТО БАРА SPRING SECURITY
-                        "Authorization": jwtToken ? `Bearer ${jwtToken}` : ""
-                    },
-                    body: JSON.stringify({
-                        listingId: listing.id,
-                        checkInDate: formattedCheckIn,
-                        checkOutDate: formattedCheckOut,
-                        numberOfGuests: 1,
-                        totalPrice: total
-                    }),
-                });
+        if (!jwtToken) {
+            setIsPaying(false);
+            const redirectPath = `/checkout/${listing.id}?start=${encodeURIComponent(startParam ?? "")}&end=${encodeURIComponent(endParam ?? "")}&guests=${guests}`;
+            toast.info("Log in to finish your reservation.");
+            router.push(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+            return;
+        }
 
-                if (response.ok) {
-                    // УСПЕШНО! Одиме на My Trips
-                    router.push("/trips");
-                } else {
-                    const errorData = await response.json().catch(() => null);
-                    console.error("Spring Boot Error Details:", errorData);
-                    alert("Грешка при креирање на резервацијата. Проверете ја конзолата.");
-                    setIsPaying(false);
-                }
-            } catch (error) {
-                console.error("Error connecting to backend:", error);
-                alert("Не може да се воспостави врска со серверот.");
-                setIsPaying(false);
-            }
-        }, 1500);
+        try {
+            await createBooking(
+                {
+                    listingId: listing.id,
+                    checkInDate: formatLocalDate(start as Date),
+                    checkOutDate: formatLocalDate(end as Date),
+                    numberOfGuests: guests
+                },
+                jwtToken
+            );
+
+            toast.success("Reservation created.");
+            router.push("/trips");
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Could not create the booking.";
+            setBookingError(message);
+            toast.error(message);
+            setIsPaying(false);
+        }
     };
 
     return (
@@ -158,9 +205,13 @@ export default function CheckoutPage() {
                         <div style={{ lineHeight: 1.8, color: "#ccc" }}>
                             <p><strong>Property:</strong> {listing.title}</p>
                             <p><strong>Duration:</strong> {nights} nights</p>
+                            <p><strong>Guests:</strong> {guests}</p>
                             <p><strong>Total:</strong> ${total.toFixed(2)}</p>
                             <p><strong>Payment:</strong> {paymentOption === "full" ? "Pay now" : "Split payment"}</p>
                         </div>
+                        {bookingError && <p style={errorText}>{bookingError}</p>}
+                        {!hasValidDates && <p style={errorText}>Choose valid check-in and check-out dates.</p>}
+                        {guests > listing.maxGuests && <p style={errorText}>This listing allows up to {listing.maxGuests} guests.</p>}
 
                         <button
                             onClick={handleConfirm}
@@ -183,3 +234,4 @@ const h2: React.CSSProperties = { marginBottom: 15 };
 const btn: React.CSSProperties = { marginTop: 20, padding: 12, width: "100%", background: "#ff385c", color: "white", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: "bold" };
 const btnSecondary: React.CSSProperties = { marginTop: 20, padding: 12, flex: 1, background: "#333", color: "white", border: "none", borderRadius: 10, cursor: "pointer" };
 const input: React.CSSProperties = { padding: 12, width: "100%", marginTop: 10, borderRadius: 10, border: "1px solid #444", background: "#000", color: "white" };
+const errorText: React.CSSProperties = { color: "#ff8a8a", marginTop: 16 };

@@ -47,8 +47,10 @@ package com.airbnb.airbnbclone.config;
 import com.airbnb.airbnbclone.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,6 +60,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
@@ -83,6 +86,10 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Дозволено за сите
+                        .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/listing/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/listing/**").permitAll()
                         .anyRequest().authenticated()               // Ова МОРА да биде вака за да работи JWT контекстот!
                 )
                 .addFilterBefore(jwtAuthenticationFilter,

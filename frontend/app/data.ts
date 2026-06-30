@@ -1,11 +1,3 @@
-export interface Review {
-    id: number;
-    user: string;
-    rating: number;
-    comment: string;
-    date: string;
-}
-
 export interface Listing {
     id: number;
     title: string;
@@ -15,445 +7,52 @@ export interface Listing {
     category: string;
     image: string;
     description: string;
-    reviews: Review[];
-    amenities: Amenity[];
-
-    maxGuests?: number;
-    availableFrom?: string;
-    availableTo?: string;
+    amenities: string[];
+    maxGuests: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    hostName?: string;
+    hostId?: number;
+    cityId?: number;
+    cityName?: string;
+    cityCountry?: string;
+    isAvailable?: boolean;
+    images: string[];
 }
 
-export interface Amenity {
-    id: string;
-    name: string;
-    icon: string;
+interface BackendListing {
+    id: number;
+    title: string;
+    description: string;
+    pricePerNight: number | string;
+    maxGuests: number;
+    category: string;
+    cityId?: number;
+    cityName?: string;
+    cityCountry?: string;
+    hostId?: number;
+    hostName?: string;
+    imageUrls?: string[];
+    averageRating?: number;
+    totalReviews?: number;
+    isAvailable?: boolean;
+    bedrooms?: number;
+    bathrooms?: number;
+    amenities?: string[];
 }
 
-export const listings: Listing[] = [
-    {
-        id: 1, title: "Old Town Ohrid Heritage", location: "Ohrid, North Macedonia", price: 110, rating: 4.9, category: "Beachfront",
-        image: "https://images.pexels.com/photos/2031706/pexels-photo-2031706.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Authentic villa in the heart of Old Town. Near St. John Kaneo church.",
-        reviews: [{ id: 1, user: "Stefan", rating: 5, comment: "Pogledot e neverojaten!", date: "2024-03-15" }],
-        amenities: [
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" },
-            { id: "parking", name: "Free parking", icon: "🚗" },
-            { id: "pool", name: "Private pool", icon: "🏊" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-09-30"
-    },
-    {
-        id: 2, title: "Kopaonik Ski Lodge", location: "Kopaonik, Serbia", price: 95, rating: 4.7, category: "Cabins",
-        image: "https://images.pexels.com/photos/1438832/pexels-photo-1438832.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Right next to the ski lifts. Includes sauna.",
-        reviews: [],
-        amenities: [
-            { id: "ski", name: "Ski-in access", icon: "🎿" },
-            { id: "sauna", name: "Private sauna", icon: "🔥" },
-            { id: "fireplace", name: "Fireplace", icon: "🪵" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-05-01",
-        availableTo: "2026-10-01"
-    },
-    {
-        id: 3, title: "Dubrovnik Walls Apartment", location: "Dubrovnik, Croatia", price: 180, rating: 4.9, category: "Beachfront",
-        image: "https://images.pexels.com/photos/1036857/pexels-photo-1036857.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Live inside the Game of Thrones filming locations.",
-        reviews: [],
-        amenities: [
-            { id: "pool", name: "Infinity pool", icon: "🏊" },
-            { id: "beach", name: "Beach access", icon: "🏖️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 4, title: "Skopje City Center Penthouse", location: "Skopje, North Macedonia", price: 65, rating: 4.8, category: "Modern",
-        image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Modern apartment with a view of the Stone Bridge.",
-        reviews: [],
-        amenities: [
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" },
-            { id: "parking", name: "Free parking", icon: "🚗" },
-        ],
-
-        maxGuests: 5,
-        availableFrom: "2026-05-15",
-        availableTo: "2026-09-30"
-    },
-    {
-        id: 5, title: "Budva Sea View Villa", location: "Budva, Montenegro", price: 140, rating: 4.7, category: "Pools",
-        image: "https://images.pexels.com/photos/594077/pexels-photo-594077.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Modern villa overlooking Mogren beach.",
-        reviews: [],   amenities: [
-            { id: "pool", name: "Infinity pool", icon: "🏊" },
-            { id: "beach", name: "Beach access", icon: "🏖️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-
-        maxGuests: 5,
-        availableFrom: "2026-05-15",
-        availableTo: "2026-09-30"
-    },
-    {
-        id: 6, title: "Zlatibor Ethno House", location: "Zlatibor, Serbia", price: 60, rating: 4.6, category: "Cabins",
-        image: "https://images.pexels.com/photos/2893177/pexels-photo-2893177.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Traditional style with mountain views.",
-        reviews: [],  amenities: [
-            { id: "pool", name: "Infinity pool", icon: "🏊" },
-            { id: "beach", name: "Beach access", icon: "🏖️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-01-01",
-        availableTo: "2026-12-31"
-    },
-    {
-        id: 7, title: "Bled Lake Treehouse", location: "Bled, Slovenia", price: 210, rating: 5.0, category: "Cabins",
-        image: "https://images.pexels.com/photos/147411/italy-mountains-dawn-daybreak-147411.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Unique stay in the Slovenian Alps.",
-        reviews: [],  amenities: [
-            { id: "lakeview", name: "Lake view", icon: "🌊" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "balcony", name: "Private balcony", icon: "🏡" },
-            { id: "heating", name: "Heating", icon: "🔥" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-05-15",
-        availableTo: "2026-09-30"
-    },
-    {
-        id: 8, title: "Ksamil Turquoise Paradise", location: "Ksamil, Albania", price: 80, rating: 4.9, category: "Beachfront",
-        image: "https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "The Maldives of Europe.",
-        reviews: [], amenities: [
-            { id: "beach", name: "Famous Beaches", icon: "🏖️" },
-            { id: "sea", name: "Blue Sea View", icon: "🌊" },
-            { id: "villa", name: "Luxury Villa", icon: "🏡" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-05-15",
-        availableTo: "2026-09-30"
-    },
-    {
-        id: 9, title: "Sarajevo Baščaršija Loft", location: "Sarajevo, Bosnia", price: 55, rating: 4.9, category: "Modern",
-        image: "https://images.pexels.com/photos/584399/pexels-photo-584399.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Heart of the historical center.",
-        reviews: [],  amenities: [
-            { id: "beach", name: "Beach access", icon: "🏖️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" },
-            { id: "sea_view", name: "Sea view", icon: "🌊" }
-        ],
-
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 10, title: "Split Luxury Mansion", location: "Split, Croatia", price: 250, rating: 4.9, category: "Pools",
-        image: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Huge mansion for large groups.",
-        reviews: [],  amenities: [
-            { id: "pool", name: "Private pool", icon: "🏊" },
-            { id: "city_center", name: "City center location", icon: "📍" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-08-29"
-    },
-    {
-        id: 11, title: "Mavrovo Lake Chalet", location: "Mavrovo, North Macedonia", price: 120, rating: 4.7, category: "Cabins",
-        image: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Ski-in ski-out mountain cabin.",
-        reviews: [],  amenities: [
-            { id: "ski", name: "Ski access nearby", icon: "🎿" },
-            { id: "fireplace", name: "Fireplace", icon: "🪵" },
-            { id: "parking", name: "Free parking", icon: "🚗" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-01-01",
-        availableTo: "2026-12-31"
-    },
-    {
-        id: 12, title: "Belgrade Waterfront", location: "Belgrade, Serbia", price: 105, rating: 4.8, category: "Modern",
-        image: "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Luxury riverside living.",
-        reviews: [],  amenities: [
-            { id: "river_view", name: "River view", icon: "🌊" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "gym", name: "Gym access", icon: "🏋️" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-01-01",
-        availableTo: "2026-12-31"
-    },
-    {
-        id: 13, title: "Berovo Pine Villa", location: "Berovo, North Macedonia", price: 50, rating: 4.9, category: "Cabins",
-        image: "https://images.pexels.com/photos/2290753/pexels-photo-2290753.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Best air quality in the Balkans.",
-        reviews: [],  amenities: [
-            { id: "forest_view", name: "Forest view", icon: "🌲" },
-            { id: "fireplace", name: "Fireplace", icon: "🪵" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "parking", name: "Free parking", icon: "🚗" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-01-01",
-        availableTo: "2026-12-31"
-    },
-    {
-        id: 14, title: "Novi Sad Danube Studio", location: "Novi Sad, Serbia", price: 45, rating: 4.8, category: "Modern",
-        image: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Minutes away from the Fortress.",
-        reviews: [],  amenities: [
-            { id: "danube_view", name: "Danube view", icon: "🌊" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "city_center", name: "City center location", icon: "📍" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-08-29"
-    },
-    {
-        id: 15, title: "Santorini Cliff House", location: "Oia, Greece", price: 350, rating: 5.0, category: "Islands",
-        image: "https://images.pexels.com/photos/1010657/pexels-photo-1010657.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Iconic blue domes and sunset views.",
-        reviews: [],  amenities: [
-            { id: "caldera_view", name: "Caldera view", icon: "🌅" },
-            { id: "infinity_pool", name: "Infinity pool", icon: "🏊" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "terrace", name: "Private terrace", icon: "🏡" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-09-29"
-    },
-    {
-        id: 16, title: "Halkidiki Sun Resort", location: "Pefkohori, Greece", price: 130, rating: 4.7, category: "Beachfront",
-        image: "https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Family friendly beachfront villa.",
-        reviews: [],  amenities: [
-            { id: "beach_access", name: "Beach access", icon: "🏖️" },
-            { id: "family_friendly", name: "Family friendly", icon: "👨‍👩‍👧‍👦" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "parking", name: "Free parking", icon: "🚗" }
-        ],
-        maxGuests: 7,
-        availableFrom: "2026-07-01",
-        availableTo: "2026-10-31"
-    },
-    {
-        id: 17, title: "Mykonos White Suite", location: "Mykonos, Greece", price: 280, rating: 4.9, category: "Islands",
-        image: "https://images.pexels.com/photos/1285625/pexels-photo-1285625.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Premium nightlife destination.",
-        reviews: [],  amenities: [
-            { id: "sea_view", name: "Sea view", icon: "🌊" },
-            { id: "luxury", name: "Luxury suite", icon: "✨" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-10-31"
-    },
-
-    {
-        id: 18, title: "Thassos Olive Garden", location: "Thassos, Greece", price: 90, rating: 4.8, category: "Islands",
-        image: "https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Nature and sea in one place.",
-        reviews: [], amenities: [
-            { id: "olive_garden", name: "Olive garden", icon: "🫒" },
-            { id: "nature", name: "Nature stay", icon: "🌿" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "parking", name: "Free parking", icon: "🚗" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-08-01"
-    },
-    {
-        id: 19, title: "Hvar Yacht Club", location: "Hvar, Croatia", price: 210, rating: 4.8, category: "Islands",
-        image: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Sunniest island in the Adriatic.",
-        reviews: [],  amenities: [
-            { id: "marina_view", name: "Marina view", icon: "⛵" },
-            { id: "yacht_access", name: "Yacht access", icon: "🛥️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "nightlife", name: "Nightlife nearby", icon: "🌙" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-08-01"
-    },
-    {
-        id: 20, title: "Kotor Stone Heritage", location: "Kotor, Montenegro", price: 115, rating: 4.9, category: "Beachfront",
-        image: "https://images.pexels.com/photos/2090645/pexels-photo-2090645.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Breathtaking views of the Bay.",
-        reviews: [],  amenities: [
-            { id: "bay_view", name: "Bay view", icon: "🌊" },
-            { id: "historic", name: "Historic building", icon: "🏛️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "old_town", name: "Old town access", icon: "🚶" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-08-01"
-    },
-    {
-        id: 21, title: "Durmitor Forest Lodge", location: "Zabljak, Montenegro", price: 75, rating: 4.8, category: "Cabins",
-        image: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Wild beauty at its best.",
-        reviews: [],  amenities: [
-            { id: "mountain_view", name: "Mountain view", icon: "🏔️" },
-            { id: "fireplace", name: "Fireplace", icon: "🪵" },
-            { id: "hiking", name: "Hiking trails", icon: "🥾" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 5,
-        availableFrom: "2026-05-01",
-        availableTo: "2026-05-04"
-    },
-    {
-        id: 22, title: "Saranda Sea Terrace", location: "Saranda, Albania", price: 60, rating: 4.6, category: "Modern",
-        image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Affordable luxury by the Ionian sea.",
-        reviews: [],  amenities: [
-            { id: "sea_view", name: "Sea view", icon: "🌊" },
-            { id: "budget_friendly", name: "Budget friendly", icon: "💰" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "balcony", name: "Private balcony", icon: "🏡" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-08-01",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 23, title: "Bansko Alpine Penthouse", location: "Bansko, Bulgaria", price: 70, rating: 4.7, category: "Cabins",
-        image: "https://images.pexels.com/photos/3551230/pexels-photo-3551230.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Best ski value in Europe.",
-        reviews: [],  amenities: [
-            { id: "ski_in", name: "Ski-in access", icon: "🎿" },
-            { id: "mountain_view", name: "Mountain view", icon: "🏔️" },
-            { id: "fireplace", name: "Fireplace", icon: "🪵" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-11-01",
-        availableTo: "2026-12-01"
-    },
-    {
-        id: 24, title: "Sunny Beach Studio", location: "Sunny Beach, Bulgaria", price: 85, rating: 4.5, category: "Beachfront",
-        image: "https://images.pexels.com/photos/2507007/pexels-photo-2507007.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Summer party capital.",
-        reviews: [],  amenities: [
-            { id: "party_area", name: "Party area", icon: "🎉" },
-            { id: "beach_access", name: "Beach access", icon: "🏖️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "nightlife", name: "Nightlife nearby", icon: "🌙" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-07-01"
-    },
-    {
-        id: 25, title: "Mostar Bridge View", location: "Mostar, Bosnia", price: 65, rating: 4.9, category: "Modern",
-        image: "https://images.pexels.com/photos/4508644/pexels-photo-4508644.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Historic stay with a view.",
-        reviews: [], amenities: [
-            { id: "view", name: "Bridge View", icon: "🌉" },
-            { id: "oldtown", name: "Historic Old Town", icon: "🏛️" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "parking", name: "Free parking", icon: "🚗" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-01-01",
-        availableTo: "2026-12-31"
-    },
-    {
-        id: 26, title: "Thessaloniki City Center", location: "Thessaloniki, Greece", price: 80, rating: 4.6, category: "Modern",
-        image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Walk to the White Tower.",
-        reviews: [],  amenities: [
-            { id: "city", name: "City Center Location", icon: "🏙️" },
-            { id: "walk", name: "Walk to attractions", icon: "🚶" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "ac", name: "Air conditioning", icon: "❄️" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-08-01",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 27, title: "Tirana Skyline Flat", location: "Tirana, Albania", price: 55, rating: 4.7, category: "Modern",
-        image: "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Modern living in the capital.",
-        reviews: [],  amenities: [
-            { id: "modern", name: "Modern Apartment", icon: "🏢" },
-            { id: "cityview", name: "City Skyline View", icon: "🌆" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "parking", name: "Free parking", icon: "🚗" }
-        ],
-        maxGuests: 6,
-        availableFrom: "2026-07-15",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 28, title: "Rovinj Romantic Villa", location: "Rovinj, Croatia", price: 160, rating: 4.9, category: "Islands",
-        image: "https://images.pexels.com/photos/594077/pexels-photo-594077.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Istrian charm and blue sea.",
-        reviews: [],  amenities: [
-            { id: "sea", name: "Sea View", icon: "🌊" },
-            { id: "romantic", name: "Romantic Villa", icon: "💙" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" },
-            { id: "oldtown", name: "Old Town Access", icon: "🏛️" }
-        ],
-        maxGuests: 7,
-        availableFrom: "2026-08-01",
-        availableTo: "2026-09-01"
-    },
-    {
-        id: 29, title: "Tara National Park Cabin", location: "Tara, Serbia", price: 70, rating: 4.9, category: "Cabins",
-        image: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Hidden gem in the Serbian mountains.",
-        reviews: [],  amenities: [
-            { id: "forest", name: "Forest Cabin", icon: "🌲" },
-            { id: "nature", name: "National Park View", icon: "🏞️" },
-            { id: "fireplace", name: "Fireplace", icon: "🔥" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-09-01",
-        availableTo: "2026-12-01"
-    },
-    {
-        id: 30, title: "Lefkada Blue Villa", location: "Lefkada, Greece", price: 145, rating: 4.8, category: "Islands",
-        image: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg?auto=compress&cs=tinysrgb&w=800",
-        description: "Famous for the best beaches in Greece.",
-        reviews: [],  amenities: [
-            { id: "beach", name: "Famous Beaches", icon: "🏖️" },
-            { id: "sea", name: "Blue Sea View", icon: "🌊" },
-            { id: "villa", name: "Luxury Villa", icon: "🏡" },
-            { id: "wifi", name: "Fast Wi-Fi", icon: "📶" }
-        ],
-        maxGuests: 4,
-        availableFrom: "2026-06-01",
-        availableTo: "2026-09-13"
-    }
-];
+export interface ListingPayload {
+    title: string;
+    description: string;
+    pricePerNight: number;
+    maxGuests: number;
+    category: string;
+    cityId: number;
+    imageUrls: string[];
+    bedrooms?: number;
+    bathrooms?: number;
+    amenities: string[];
+}
 
 export interface Reservation {
     listingId: number;
@@ -461,4 +60,355 @@ export interface Reservation {
     endDate: string;
 }
 
-export const reservations: Reservation[] = [];
+export interface Booking {
+    id: number;
+    listingId: number;
+    listingTitle?: string;
+    guestId?: number;
+    guestName?: string;
+    checkInDate: string;
+    checkOutDate: string;
+    numberOfGuests: number;
+    totalPrice: number;
+    status: string;
+}
+
+interface CreateBookingRequest {
+    listingId: number;
+    checkInDate: string;
+    checkOutDate: string;
+    numberOfGuests: number;
+}
+
+export interface Review {
+    id: number;
+    listingId: number;
+    listingTitle?: string;
+    guestId?: number;
+    guestName?: string;
+    rating: number;
+    comment?: string;
+}
+
+export interface ReviewPayload {
+    listingId: number;
+    rating: number;
+    comment: string;
+}
+
+export interface User {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber?: string;
+    profilePicture?: string;
+    role: string;
+}
+
+interface AuthResponse {
+    token: string;
+    email: string;
+    role: string;
+}
+
+interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+interface RegisterRequest {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phoneNumber: string;
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const FALLBACK_IMAGE = "/window.svg";
+
+function mapListing(listing: BackendListing): Listing {
+    const city = listing.cityName ?? "Unknown city";
+    const country = listing.cityCountry ? `, ${listing.cityCountry}` : "";
+    const images = listing.imageUrls?.filter(Boolean) ?? [];
+
+    return {
+        id: listing.id,
+        title: listing.title,
+        location: `${city}${country}`,
+        price: Number(listing.pricePerNight),
+        rating: listing.averageRating ?? 0,
+        category: listing.category,
+        image: images[0] ?? FALLBACK_IMAGE,
+        description: listing.description,
+        amenities: listing.amenities ?? [],
+        maxGuests: listing.maxGuests,
+        bedrooms: listing.bedrooms,
+        bathrooms: listing.bathrooms,
+        hostId: listing.hostId,
+        hostName: listing.hostName,
+        cityId: listing.cityId,
+        cityName: listing.cityName,
+        cityCountry: listing.cityCountry,
+        isAvailable: listing.isAvailable,
+        images
+    };
+}
+
+async function parseError(response: Response): Promise<string> {
+    const data = await response.json().catch(() => null);
+
+    if (data?.message) return data.message;
+
+    return `Backend request failed: ${response.status}`;
+}
+
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${path}`, init);
+
+    if (!response.ok) {
+        throw new Error(await parseError(response));
+    }
+
+    if (response.status === 204) {
+        return undefined as T;
+    }
+
+    return response.json();
+}
+
+export async function fetchListings(): Promise<Listing[]> {
+    const listings = await fetchJson<BackendListing[]>("/api/listings");
+    return listings.map(mapListing);
+}
+
+export interface ListingSearchParams {
+    cityId?: number;
+    location?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    guests?: number;
+    checkIn?: string;
+    checkOut?: string;
+}
+
+function toQueryString(params: ListingSearchParams) {
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+            searchParams.set(key, String(value));
+        }
+    });
+
+    const query = searchParams.toString();
+    return query ? `?${query}` : "";
+}
+
+export async function searchListings(params: ListingSearchParams): Promise<Listing[]> {
+    const listings = await fetchJson<BackendListing[]>(
+        `/api/listings/search${toQueryString(params)}`
+    );
+    return listings.map(mapListing);
+}
+
+export async function fetchListingById(id: number): Promise<Listing> {
+    const listing = await fetchJson<BackendListing>(`/api/listings/${id}`);
+    return mapListing(listing);
+}
+
+export async function fetchListingsByCity(cityId: number): Promise<Listing[]> {
+    const listings = await fetchJson<BackendListing[]>(`/api/listings/city/${cityId}`);
+    return listings.map(mapListing);
+}
+
+export async function fetchListingsByHost(hostId: number): Promise<Listing[]> {
+    const listings = await fetchJson<BackendListing[]>(`/api/listings/host/${hostId}`);
+    return listings.map(mapListing);
+}
+
+export async function fetchListingsByCategory(category: string): Promise<Listing[]> {
+    const listings = await fetchJson<BackendListing[]>(`/api/listings/category/${category}`);
+    return listings.map(mapListing);
+}
+
+export async function createListing(listing: ListingPayload, token: string): Promise<Listing> {
+    const created = await fetchJson<BackendListing>("/api/listings", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(listing)
+    });
+    return mapListing(created);
+}
+
+export async function updateListing(
+    id: number,
+    listing: ListingPayload,
+    token: string
+): Promise<Listing> {
+    const updated = await fetchJson<BackendListing>(`/api/listings/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(listing)
+    });
+    return mapListing(updated);
+}
+
+export async function deleteListing(id: number, token: string): Promise<void> {
+    await fetchJson<void>(`/api/listings/${id}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function toggleListingAvailability(id: number, token: string): Promise<Listing> {
+    const updated = await fetchJson<BackendListing>(`/api/listings/${id}/availability`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    return mapListing(updated);
+}
+
+export async function fetchBookingsByListing(listingId: number): Promise<Booking[]> {
+    return fetchJson<Booking[]>(`/api/bookings/listings/${listingId}`);
+}
+
+export async function fetchBookingById(id: number, token: string): Promise<Booking> {
+    return fetchJson<Booking>(`/api/bookings/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function fetchMyBookings(token: string): Promise<Booking[]> {
+    return fetchJson<Booking[]>("/api/bookings/my", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function fetchHostBookings(token: string): Promise<Booking[]> {
+    return fetchJson<Booking[]>("/api/bookings/host", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function createBooking(
+    booking: CreateBookingRequest,
+    token: string
+): Promise<Booking> {
+    return fetchJson<Booking>("/api/bookings", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(booking)
+    });
+}
+
+export async function confirmBooking(id: number, token: string): Promise<Booking> {
+    return fetchJson<Booking>(`/api/bookings/${id}/confirm`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function cancelBooking(id: number, token: string): Promise<Booking> {
+    return fetchJson<Booking>(`/api/bookings/${id}/cancel`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function fetchReviewById(id: number): Promise<Review> {
+    return fetchJson<Review>(`/api/reviews/${id}`);
+}
+
+export async function fetchReviewsByListing(listingId: number): Promise<Review[]> {
+    return fetchJson<Review[]>(`/api/reviews/listing/${listingId}`);
+}
+
+export async function fetchMyReviews(token: string): Promise<Review[]> {
+    return fetchJson<Review[]>("/api/reviews/my", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function createReview(review: ReviewPayload, token: string): Promise<Review> {
+    return fetchJson<Review>("/api/reviews", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(review)
+    });
+}
+
+export async function deleteReview(id: number, token: string): Promise<void> {
+    await fetchJson<void>(`/api/reviews/${id}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function fetchUsers(token: string): Promise<User[]> {
+    return fetchJson<User[]>("/api/users", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function fetchUserById(id: number, token: string): Promise<User> {
+    return fetchJson<User>(`/api/users/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export async function login(request: LoginRequest): Promise<AuthResponse> {
+    return fetchJson<AuthResponse>("/api/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(request)
+    });
+}
+
+export async function register(request: RegisterRequest): Promise<AuthResponse> {
+    return fetchJson<AuthResponse>("/api/auth/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(request)
+    });
+}

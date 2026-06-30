@@ -4,9 +4,12 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useToast } from "../components/ToastProvider";
+import { register } from "../data";
 
 export default function RegisterPage() {
     const router = useRouter();
+    const toast = useToast();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -15,31 +18,19 @@ export default function RegisterPage() {
         e.preventDefault();
 
         try {
-            // Праќаме POST барање до Spring Boot бекендот (порта 8080)
-            const response = await fetch("http://localhost:8080/api/auth/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    firstName: name,
-                    lastName: "",
-                    email: email,
-                    password: password,
-                    phoneNumber: ""
-                }),
+            await register({
+                firstName: name,
+                lastName: "",
+                email,
+                password,
+                phoneNumber: ""
             });
 
-            if (response.ok) {
-                alert("Registration successful!");
-                router.push("/login");
-            } else {
-                const err = await response.json();
-                alert(err.message || "Register failed");
-            }
+            toast.success("Registration successful.");
+            router.push("/login");
 
-        } catch (err) {
-            alert("Backend not reachable");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Backend not reachable.");
         }
     };
 

@@ -62,9 +62,17 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public BookingDTO getBookingById(Long id) {
+    public BookingDTO getBookingById(Long id, Long userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        boolean isGuest = booking.getGuest().getId().equals(userId);
+        boolean isHost = booking.getListing().getHost().getId().equals(userId);
+
+        if (!isGuest && !isHost) {
+            throw new UnauthorizedException("You are not authorized to view this booking");
+        }
+
         return mapToDTO(booking);
     }
 

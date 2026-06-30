@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,9 +90,22 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ListingDTO> searchListings(Long cityId, ListingCategory category,
-                                           BigDecimal minPrice, BigDecimal maxPrice, Integer guests) {
-        return listingRepository.searchListings(cityId, category, minPrice, maxPrice, guests)
+    public List<ListingDTO> searchListings(Long cityId, String location, ListingCategory category,
+                                           BigDecimal minPrice, BigDecimal maxPrice, Integer guests,
+                                           LocalDate checkIn, LocalDate checkOut) {
+        String locationPattern = location == null || location.isBlank()
+                ? null
+                : "%" + location.trim().toLowerCase() + "%";
+
+        return listingRepository.searchListings(
+                        cityId,
+                        locationPattern,
+                        category,
+                        minPrice,
+                        maxPrice,
+                        guests,
+                        checkIn,
+                        checkOut)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -185,6 +199,7 @@ public class ListingServiceImpl implements ListingService {
                 .category(listing.getCategory())
                 .cityId(listing.getCity().getId())
                 .cityName(listing.getCity().getName())
+                .cityCountry(listing.getCity().getCountry())
                 .hostId(listing.getHost().getId())
                 .hostName(listing.getHost().getFirstName() + " " + listing.getHost().getLastName())
                 .imageUrls(listing.getImageUrls())

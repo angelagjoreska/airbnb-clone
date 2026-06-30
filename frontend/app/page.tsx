@@ -1,13 +1,16 @@
 "use client";
 import { useWishlist } from "./context/WishlistContext";
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Categories from "./components/Categories";
 import Link from "next/link";
-import { listings } from "./data";
+import { Listing, searchListings } from "./data";
 
 export default function Home() {
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
 
     const [searchCountry, setSearchCountry] = useState("");
@@ -17,31 +20,47 @@ export default function Home() {
 
     const { wishlist, toggleWishlist } = useWishlist();
 
-    const filteredListings = listings.filter((l) => {
-        const matchesCategory =
-            selectedCategory === "All" || l.category === selectedCategory;
+    const formatLocalDate = (date: Date) => {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        return localDate.toISOString().split("T")[0];
+    };
 
+    useEffect(() => {
+        let isMounted = true;
+
+        searchListings({
+            location: searchCountry.trim() || undefined,
+            category: selectedCategory === "All" ? undefined : selectedCategory,
+            guests: searchGuests || undefined,
+            checkIn: searchStartDate ? formatLocalDate(searchStartDate) : undefined,
+            checkOut: searchEndDate ? formatLocalDate(searchEndDate) : undefined
+        })
+            .then((data) => {
+                if (isMounted) {
+                    setListings(data);
+                    setError("");
+                }
+            })
+            .catch(() => {
+                if (isMounted) setError("Could not load listings from the backend.");
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedCategory, searchGuests, searchCountry, searchStartDate, searchEndDate]);
+
+    const filteredListings = listings.filter((l) => {
         const matchesSearch =
             !searchCountry ||
             l.location.toLowerCase().includes(searchCountry.toLowerCase()) ||
             l.title.toLowerCase().includes(searchCountry.toLowerCase());
 
-        const matchesGuests =
-            searchGuests === 0 ||
-            !l.maxGuests ||
-            l.maxGuests >= searchGuests;
-
-        const matchesDates =
-            !searchStartDate ||
-            !searchEndDate ||
-            !l.availableFrom ||
-            !l.availableTo ||
-            (
-                new Date(l.availableFrom) <= searchStartDate &&
-                new Date(l.availableTo) >= searchEndDate
-            );
-
-        return matchesCategory && matchesSearch && matchesGuests && matchesDates;
+        return matchesSearch;
     });
 
     return (
@@ -64,7 +83,15 @@ export default function Home() {
                         : "Places near you"}
                 </h1>
 
-                {filteredListings.length > 0 ? (
+                {isLoading ? (
+                    <div style={{ textAlign: "center", marginTop: "50px", color: "#a0a0a0" }}>
+                        Loading listings...
+                    </div>
+                ) : error ? (
+                    <div style={{ textAlign: "center", marginTop: "50px", color: "#ff385c" }}>
+                        {error}
+                    </div>
+                ) : filteredListings.length > 0 ? (
                     <div style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",

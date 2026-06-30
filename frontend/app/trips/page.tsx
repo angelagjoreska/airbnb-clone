@@ -2,50 +2,63 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-// Дефинирај го интерфејсот според твојот BookingDTO од Spring Boot
-interface Booking {
-    id: number;
-    listingId: number;
-    listingTitle?: string;
-    checkInDate: string;  // сменето од startDate
-    checkOutDate: string; // сменето од endDate
-    totalPrice: number;
-    status: string;
-}
+import { Booking, cancelBooking, fetchMyBookings } from "../data";
+import { useToast } from "../components/ToastProvider";
 
 export default function MyTripsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const toast = useToast();
 
     useEffect(() => {
-        const fetchMyBookings = async () => {
-            // И тука го земаме токенот
-            const jwtToken = localStorage.getItem("token");
+        const jwtToken = localStorage.getItem("token");
+        let isMounted = true;
 
-            try {
-                const response = await fetch("http://localhost:8080/api/bookings/my", {
-                    headers: {
-                        // ГО ПРАЌАМЕ ТОКЕНОТ И ЗА ЧИТАЊЕ НА РЕЗЕРВАЦИИТЕ
-                        "Authorization": jwtToken ? `Bearer ${jwtToken}` : ""
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setBookings(data);
-                } else {
-                    console.error("Failed to fetch bookings");
-                }
-            } catch (error) {
+        if (!jwtToken) {
+            toast.info("Log in to view your trips.");
+            router.push("/login?redirect=/trips");
+            return () => {
+                isMounted = false;
+            };
+        }
+
+        fetchMyBookings(jwtToken)
+            .then((data) => {
+                if (isMounted) setBookings(data);
+            })
+            .catch((error) => {
                 console.error("Error fetching bookings:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+                toast.error("Could not load your trips.");
+            })
+            .finally(() => {
+                if (isMounted) setLoading(false);
+            });
 
-        void fetchMyBookings();
-    }, []);
+        return () => {
+            isMounted = false;
+        };
+    }, [router, toast]);
+
+    const handleCancel = async (bookingId: number) => {
+        const jwtToken = localStorage.getItem("token");
+
+        if (!jwtToken) {
+            toast.info("Log in to cancel this booking.");
+            router.push("/login?redirect=/trips");
+            return;
+        }
+
+        try {
+            const updated = await cancelBooking(bookingId, jwtToken);
+            setBookings((current) =>
+                current.map((booking) => (booking.id === bookingId ? updated : booking))
+            );
+            toast.success("Booking cancelled.");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Could not cancel booking.");
+        }
+    };
 
     return (
         <div style={container}>
@@ -67,7 +80,7 @@ export default function MyTripsPage() {
                     <div style={grid}>
                         {bookings.map((booking) => (
                             <div key={booking.id} style={tripCard}>
-                                <div style={badge}>✓ Confirmed</div>
+                                <div style={statusBadge(booking.status)}>{booking.status}</div>
                                 <h3 style={{marginTop: 10, marginBottom: 5}}>
                                     {booking.listingTitle || `Listing #${booking.listingId}`}
                                 </h3>
@@ -81,6 +94,16 @@ export default function MyTripsPage() {
                                 </div>
                                 <div style={{fontSize: 11, color: "#555", marginTop: 10}}>
                                     Booking Reference: #{booking.id}
+                                </div>
+                                <div style={actions}>
+                                    <button onClick={() => router.push(`/trips/${booking.id}`)} style={secondaryBtn}>
+                                        Details
+                                    </button>
+                                    {booking.status !== "CANCELLED" && (
+                                        <button onClick={() => handleCancel(booking.id)} style={dangerBtn}>
+                                            Cancel
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -120,15 +143,15 @@ const tripCard: React.CSSProperties = {
     position: "relative"
 };
 
-const badge: React.CSSProperties = {
+const statusBadge = (status: string): React.CSSProperties => ({
     display: "inline-block",
-    background: "rgba(34, 197, 94, 0.2)",
-    color: "#22c55e",
+    background: status === "CANCELLED" ? "rgba(239, 68, 68, 0.2)" : status === "CONFIRMED" ? "rgba(34, 197, 94, 0.2)" : "rgba(245, 158, 11, 0.2)",
+    color: status === "CANCELLED" ? "#ef4444" : status === "CONFIRMED" ? "#22c55e" : "#f59e0b",
     padding: "4px 10px",
     borderRadius: "20px",
     fontSize: "12px",
     fontWeight: "bold"
-};
+});
 
 const dateText: React.CSSProperties = {
     color: "#aaa",
@@ -178,4 +201,30 @@ const exploreBtn: React.CSSProperties = {
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "bold"
+};
+
+const actions: React.CSSProperties = {
+    display: "flex",
+    gap: 10,
+    marginTop: 16
+};
+
+const secondaryBtn: React.CSSProperties = {
+    flex: 1,
+    padding: "10px",
+    background: "#222",
+    border: "1px solid #444",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer"
+};
+
+const dangerBtn: React.CSSProperties = {
+    flex: 1,
+    padding: "10px",
+    background: "rgba(239, 68, 68, 0.15)",
+    border: "1px solid #ef4444",
+    color: "#ffb4b4",
+    borderRadius: "8px",
+    cursor: "pointer"
 };

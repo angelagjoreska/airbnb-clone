@@ -12,18 +12,17 @@ const WishlistContext = createContext<WishlistContextType>({
 });
 
 export const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
-    const [wishlist, setWishlist] = useState<number[]>([]);
-
     const getUserKey = () => {
         const user = localStorage.getItem("userEmail"); // или userId
         return user ? `wishlist_${user}` : "wishlist_guest";
     };
 
-    // LOAD
-    useEffect(() => {
+    const [wishlist, setWishlist] = useState<number[]>(() => {
+        if (typeof window === "undefined") return [];
+
         const stored = localStorage.getItem(getUserKey());
-        if (stored) setWishlist(JSON.parse(stored));
-    }, []);
+        return stored ? JSON.parse(stored) : [];
+    });
 
     // SAVE
     useEffect(() => {
