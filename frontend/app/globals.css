@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #121212;
   --foreground: #171717;
 }
 body {
@@ -27,4 +27,93 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* DARK DATEPICKER THEME */
+
+.react-datepicker {
+  background-color: #111 !important;
+  border: 1px solid #333 !important;
+  border-radius: 12px !important;
+  font-family: inherit;
+  color: white !important;
+}
+
+/* Header */
+.react-datepicker__header {
+  background-color: #0b0b0b !important;
+  border-bottom: 1px solid #333 !important;
+}
+
+/* Month + nav */
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: white !important;
+}
+
+.react-datepicker__day-name {
+  color: #a0a0a0 !important;
+}
+
+/* Days */
+.react-datepicker__day {
+  color: white !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: #222 !important;
+  border-radius: 8px !important;
+}
+
+/* Selected range */
+.react-datepicker__day--in-range,
+.react-datepicker__day--in-selecting-range {
+  background-color: rgba(255, 56, 92, 0.25) !important;
+  color: white !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--range-start,
+.react-datepicker__day--range-end {
+  background-color: #ff385c !important;
+  color: white !important;
+  border-radius: 8px !important;
+}
+
+/* Disabled (booked dates) */
+.react-datepicker__day--disabled {
+  color: #444 !important;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+/* Navigation arrows */
+.react-datepicker__navigation-icon::before {
+  border-color: #fff !important;
+}
+
+/* Input (if used) */
+.react-datepicker__input-container input {
+  background: #111;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.react-datepicker.dark-datepicker {
+  background: #111 !important;
+  border: 1px solid #333 !important;
+}
+
+.react-datepicker.dark-datepicker .react-datepicker__header {
+  background: #111 !important;
+  border-bottom: 1px solid #333 !important;
+}
+
+.react-datepicker.dark-datepicker .react-datepicker__current-month,
+.react-datepicker.dark-datepicker .react-datepicker__day-name,
+.react-datepicker.dark-datepicker .react-datepicker__day {
+  color: white !important;
 }

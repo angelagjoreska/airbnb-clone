@@ -12,7 +12,6 @@ import {
     Castle
 } from "lucide-react";
 
-// Ова е делот што ја решава грешката TS2322 од твојата прва слика
 interface CategoriesProps {
     selectedCategory: string;
     setSelectedCategory: (category: string) => void;
@@ -59,7 +58,6 @@ export default function Categories({ selectedCategory, setSelectedCategory }: Ca
                             cursor: "pointer",
                             paddingBottom: "10px",
                             transition: "all 0.2s ease",
-                            // Линијата под категоријата ако е активна
                             borderBottom: isActive ? "2px solid white" : "2px solid transparent",
                             color: isActive ? "white" : "#717171",
                             minWidth: "70px"

@@ -33,6 +33,22 @@ export default function ListingDetail() {
     const [dates, setDates] = useState<[Date | null, Date | null]>([null, null]);
     const [guestCount, setGuestCount] = useState(1);
     const [startDate, endDate] = dates;
+    const [selectedImage, setSelectedImage] = useState(0);
+    const nextImage = () => {
+        if (!listing) return;
+
+        setSelectedImage((prev) =>
+            prev === listing.images.length - 1 ? 0 : prev + 1
+        );
+    };
+
+    const previousImage = () => {
+        if (!listing) return;
+
+        setSelectedImage((prev) =>
+            prev === 0 ? listing.images.length - 1 : prev - 1
+        );
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -178,6 +194,7 @@ export default function ListingDetail() {
 
     if (!listing || error) {
         return (
+
             <div style={{ backgroundColor: "#000", minHeight: "100vh", color: "white", padding: "40px" }}>
                 <Navbar onSearch={() => {}} />
                 <h1>{error || "Listing not found."}</h1>
@@ -197,12 +214,110 @@ export default function ListingDetail() {
                 </div>
 
                 {/* Голема слика */}
-                <div style={{ width: "100%", height: "500px", overflow: "hidden", borderRadius: "16px", marginBottom: "32px" }}>
+                {/*<div*/}
+                {/*    style={{*/}
+                {/*        display: "flex",*/}
+                {/*        gap: "10px",*/}
+                {/*        overflowX: "auto",*/}
+                {/*        marginBottom: "30px"*/}
+                {/*    }}*/}
+                {/*>*/}
+                {/*    {(listing.images?.length ? listing.images : [listing.image]).map((img, index) => (*/}
+                {/*        <img*/}
+                {/*            key={index}*/}
+                {/*            src={img}*/}
+                {/*            onClick={() => setSelectedImage(index)}*/}
+                {/*            style={{*/}
+                {/*                width: "120px",*/}
+                {/*                height: "90px",*/}
+                {/*                objectFit: "cover",*/}
+                {/*                borderRadius: "10px",*/}
+                {/*                cursor: "pointer",*/}
+                {/*                transition: "all .25s ease",*/}
+                {/*                transform:*/}
+                {/*                    selectedImage === index ? "scale(1.08)" : "scale(1)",*/}
+                {/*                border:*/}
+                {/*                    selectedImage === index*/}
+                {/*                        ? "3px solid #ff385c"*/}
+                {/*                        : "2px solid transparent"*/}
+                {/*            }}*/}
+                {/*        />*/}
+                {/*    ))}*/}
+                {/*</div>*/}
+                {/*<div style={{ width: "100%", height: "500px", overflow: "hidden", borderRadius: "16px", marginBottom: "32px" }}>*/}
+                {/*    <img*/}
+                {/*        src={listing.image}*/}
+                {/*        alt={listing.title}*/}
+                {/*        style={{ width: "100%", height: "100%", objectFit: "cover" }}*/}
+                {/*    />*/}
+                {/*</div>*/}
+
+
+                <div
+                    style={{
+                        position: "relative",
+                        width: "100%",
+                        height: "500px",
+                        overflow: "hidden",
+                        borderRadius: "16px",
+                        marginBottom: "20px"
+                    }}
+                >
                     <img
-                        src={listing.image}
+                        src={listing.images?.[selectedImage] || listing.image}
                         alt={listing.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover"
+                        }}
                     />
+
+
+                {listing.images.length > 1 && (
+                    <button
+                        onClick={previousImage}
+                        style={{
+                            position: "absolute",
+                            left: "20px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                            border: "none",
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            cursor: "pointer",
+                            fontSize: "22px"
+                        }}
+                    >
+                        ❮
+                    </button>
+                )}
+
+
+                    {listing.images.length > 1 && (
+                        <button
+                            onClick={nextImage}
+                            style={{
+                                position: "absolute",
+                                right: "20px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                width: "45px",
+                                height: "45px",
+                                borderRadius: "50%",
+                                border: "none",
+                                background: "rgba(0,0,0,0.6)",
+                                color: "white",
+                                cursor: "pointer",
+                                fontSize: "22px"
+                            }}
+                        >
+                            ❯
+                        </button>
+                    )}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "60px" }}>
@@ -401,27 +516,36 @@ export default function ListingDetail() {
                             marginBottom: "24px",
                             overflow: "hidden"
                         }}>
-                            <div style={{padding: "12px", borderBottom: "1px solid #444"}}>
+                            <div style={{padding: "5px", borderBottom: "1px solid #444"}}>
                                 <label style={{fontSize: "10px", fontWeight: "bold", display: "block", color: "white"}}>
                                     CHECK-IN / CHECK-OUT
                                 </label>
 
-                                <DatePicker
-                                    selectsRange
-                                    startDate={startDate}
-                                    endDate={endDate}
-                                    onChange={(update: [Date | null, Date | null]) => setDates(update)}
-                                    minDate={new Date()}
-                                    placeholderText="Select dates"
-                                    inline
-                                    excludeDateIntervals={bookings
-                                        .filter((booking) => booking.status !== "CANCELLED")
-                                        .map((booking) => ({
-                                            start: new Date(`${booking.checkInDate}T00:00:00`),
-                                            end: new Date(`${booking.checkOutDate}T00:00:00`)
-                                        }))
-                                    }
-                                />
+                                <div
+                                    style={{
+                                        background: "#111",
+                                        padding: "15px",
+                                        borderRadius: "12px",
+                                        // border: "1px solid #333"
+                                    }}
+                                >
+                                    <DatePicker
+                                        selectsRange
+                                        startDate={startDate}
+                                        endDate={endDate}
+                                        onChange={(update: [Date | null, Date | null]) => setDates(update)}
+                                        minDate={new Date()}
+                                        inline
+                                        calendarClassName="dark-datepicker"
+                                        excludeDateIntervals={bookings
+                                            .filter((booking) => booking.status !== "CANCELLED")
+                                            .map((booking) => ({
+                                                start: new Date(`${booking.checkInDate}T00:00:00`),
+                                                end: new Date(`${booking.checkOutDate}T00:00:00`)
+                                            }))
+                                        }
+                                    />
+                                </div>
                             </div>
                             <div style={{padding: "12px"}}>
                                 <label style={{fontSize: "10px", fontWeight: "bold", display: "block", color: "white", marginBottom: "8px"}}>
